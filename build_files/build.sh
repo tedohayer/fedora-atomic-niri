@@ -32,6 +32,7 @@ dnf5 -y install \
 		brightnessctl \
 		cascadia-fonts-all \
 		fastfetch \
+		fish \
 		fprintd \
 		fprintd-pam \
 		google-noto-sans-fonts \
