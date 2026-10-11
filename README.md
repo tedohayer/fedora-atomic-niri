@@ -30,7 +30,7 @@ Universal Blue. Like other Universal Blue images, it stays out of your way:
 
 ## What you get
 
-- **Desktop**: niri + Noctalia (bar, notifications, launcher, lock screen, idle, wallpaper, polkit agent), Alacritty, imv
+- **Desktop**: niri + Noctalia (bar, notifications, launcher, lock screen, idle, wallpaper, polkit agent), Alacritty, Nautilus (also the file chooser for open/save dialogs), imv
 - **Login**: [Noctalia Greeter](https://github.com/noctalia-dev/noctalia-greeter)
 - **Shell**: zsh with autosuggestions and syntax highlighting
 - **Containers & VMs**: podman (+ compose, machine, tui) and the virtualization group; distrobox comes with base-main

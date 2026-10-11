@@ -26,6 +26,8 @@ dnf5 -y install \
 		xdg-desktop-portal-gtk \
 		xdg-user-dirs
 
+# nautilus is also the file chooser: xdg-desktop-portal-gnome, which niri's
+# portal config uses for open/save dialogs, hands them to Nautilus.
 dnf5 -y install \
 		brightnessctl \
 		cascadia-fonts-all \
@@ -37,6 +39,7 @@ dnf5 -y install \
 		google-noto-serif-fonts \
 		imv \
 		jetbrains-mono-fonts-all \
+		nautilus \
 		noctalia \
 		podman-compose \
 		podman-machine \
