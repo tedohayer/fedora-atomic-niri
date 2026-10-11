@@ -101,19 +101,21 @@ rm -f /etc/pam.d/greetd.bak.noctalia.*
 
 # Log in with a password, not a fingerprint: the login password is what
 # unlocks the keyring, and without it the keyring is stored unencrypted.
-# password-auth is system-auth without pam_fprintd (what GDM uses), so
-# fingerprint stays available for sudo and the lock screen.
+# password-auth is system-auth without pam_fprintd (what GDM uses).
 sed -i 's/\bsystem-auth\b/password-auth/' /etc/pam.d/greetd
-if grep -q -e system-auth -e pam_fprintd /etc/pam.d/greetd; then
+
+# Fingerprint auth for everything on system-auth: sudo, polkit prompts and
+# text-console logins (greetd uses password-auth, above; Noctalia's lock
+# screen talks to fprintd itself). Installing fprintd-pam doesn't enable it;
+# authselect has to add pam_fprintd to the PAM stacks.
+authselect enable-feature with-fingerprint
+grep -q pam_fprintd /etc/pam.d/system-auth
+# Checked after authselect, through the stacks greetd includes
+if grep -q -e system-auth -e pam_fprintd \
+		/etc/pam.d/greetd /etc/pam.d/password-auth /etc/pam.d/postlogin; then
 	echo "greetd PAM still reaches pam_fprintd" >&2
 	exit 1
 fi
-
-# Fingerprint auth for sudo and polkit prompts (login uses password-auth, above;
-# the lock screen talks to fprintd itself). Installing fprintd-pam
-# doesn't enable it; authselect has to add pam_fprintd to the PAM stacks.
-authselect enable-feature with-fingerprint
-grep -q pam_fprintd /etc/pam.d/system-auth
 
 # Trust Aerinite's cosign key for ghcr.io/tedohayer/aerinite, so installs can
 # use ostree-image-signed:docker:// and refuse unsigned or tampered images.
