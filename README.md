@@ -31,8 +31,8 @@ Universal Blue. Like other Universal Blue images, it stays out of your way:
 ## What you get
 
 - **Desktop**: niri + Noctalia (bar, notifications, launcher, lock screen, idle, wallpaper, polkit agent), Alacritty, Nautilus (also the file chooser for open/save dialogs), imv
-- **Login**: [Noctalia Greeter](https://github.com/noctalia-dev/noctalia-greeter)
-- **Shell**: zsh with autosuggestions and syntax highlighting
+- **Login**: [Noctalia Greeter](https://github.com/noctalia-dev/noctalia-greeter), with niri preselected
+- **Shell**: zsh, with the autosuggestions and syntax highlighting plugins installed but not loaded (see [Configuration](#configuration)). Your login shell stays bash until you `chsh`
 - **Containers & VMs**: podman (+ compose, machine, tui) and the virtualization group; distrobox comes with base-main
 - **Flatpaks**: Firefox and the [Bazaar](https://github.com/kolunmi/bazaar) app store from Flathub, installed on first boot via `flatpak preinstall` (uninstalling one opts out). Like any preinstall list, this also removes apps that a previous OS preinstalled and Aerinite doesn't list; apps you installed yourself are left alone
 - **Hardware**: fprintd with fingerprint for sudo, password prompts and the lock screen (the greeter takes your password, which unlocks the keyring), brightnessctl, playerctl, power-profiles-daemon
@@ -43,6 +43,11 @@ Codecs come from base-main (negativo17 fedora-multimedia). The rpm Firefox and n
 ## Install
 
 ### From an existing Fedora Atomic or Universal Blue system
+
+Two things to know before switching:
+
+- If you already have `~/.config/niri/config.kdl` (say, from another niri setup), niri uses it instead of Aerinite's, so Noctalia won't start. Move it aside, or start it with `include "/etc/niri/config.kdl"` and keep only your changes below that.
+- On first boot, `flatpak preinstall` installs Firefox and Bazaar and removes Flatpaks your current image preinstalled that Aerinite doesn't list. Apps you installed yourself stay; reinstall any of the others you want from Bazaar.
 
 Any Fedora Atomic desktop or Universal Blue image works as a starting point. Your current system doesn't have Aerinite's signing key yet, so the first switch can't verify the image:
 
@@ -100,6 +105,21 @@ The image ships defaults; anything in your home directory overrides them.
 | Noctalia | `/usr/share/aerinite/noctalia.toml` (from `system_files/usr/share/aerinite/noctalia.toml`), linked into `~/.config/noctalia/00-image.toml` at login | `~/.config/noctalia/config.toml`. Changes made in Noctalia's settings window are saved to `~/.local/state/noctalia/settings.toml` |
 | Greeter | `/etc/noctalia-greeter/greeter.toml` | Edit that file |
 | GTK | Close button only, dark style (`zz0-aerinite.gschema.override`) | `gsettings set ...` |
+| zsh plugins | Installed, not loaded | Add to `~/.zshrc`: `source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh` and `source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh` (last) |
+
+The clock is 12-hour in the bar, the shell and the greeter. For 24-hour, put this in `~/.config/noctalia/config.toml`, and change `time_format` in `/etc/noctalia-greeter/greeter.toml` to `"{:%H:%M}"`:
+
+```toml
+[shell]
+time_format = "{:%H:%M}"
+
+[calendar]
+event_time_format = "%H:%M"
+
+[widget.clock]
+type = "clock"
+format = "{:%H:%M}"
+```
 
 To change the image itself, edit `build_files/build.sh` (packages and setup commands) or the config files under `system_files/` (laid out at their installed paths), and push to `main`.
 
