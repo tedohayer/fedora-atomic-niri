@@ -145,14 +145,30 @@ systemctl disable getty@tty1.service
 
 # Rebuild the initramfs so the boot splash theme is in it (base-main's
 # initramfs carries the default theme). Same invocation as Bluefin.
+# dracut copies os-release into the initramfs, so build it from a copy without
+# the per-build versions (ours and base-main's): otherwise its ~240 MB change
+# every build and every update downloads them again.
 KVER="$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' kernel-core | tail -1)"
 export DRACUT_NO_XATTR=1
+cp /usr/lib/os-release /tmp/os-release
+sed -i -E \
+    -e '/^(OSTREE_VERSION|IMAGE_VERSION)=/d' \
+    -e "s|^VERSION=.*|VERSION=\"$(rpm -E %fedora)\"|" \
+    -e 's|^PRETTY_NAME=.*|PRETTY_NAME="Aerinite"|' \
+    /usr/lib/os-release
 /usr/bin/dracut --no-hostonly --kver "${KVER}" --reproducible -v --add ostree \
     -f "/usr/lib/modules/${KVER}/initramfs.img"
+cp /tmp/os-release /usr/lib/os-release
 chmod 0600 "/usr/lib/modules/${KVER}/initramfs.img"
 # (list to a file first: grep -q exiting early would SIGPIPE lsinitrd under pipefail)
 lsinitrd "/usr/lib/modules/${KVER}/initramfs.img" > /tmp/initramfs-contents.txt
 grep -q 'plymouth/themes/aerinite/watermark.png' /tmp/initramfs-contents.txt
+lsinitrd -f usr/lib/initrd-release "/usr/lib/modules/${KVER}/initramfs.img" > /tmp/initrd-release
+if grep -E '^(OSTREE_VERSION|IMAGE_VERSION)=' /tmp/initrd-release; then
+	echo "initramfs carries a per-build version" >&2
+	exit 1
+fi
+grep -q '^IMAGE_VERSION=' /usr/lib/os-release
 
 dnf5 list --installed kernel
 rpm -q waybar swaylock fuzzel || true
