@@ -1,13 +1,11 @@
 ARG BASE_IMAGE=ghcr.io/ublue-os/base-main:45
 
-# Allow build scripts to be referenced without being copied into the final image
+# Build context: scripts and files used during the build, not copied into the image
 FROM scratch AS ctx
 COPY build_files /
 COPY system_files /system_files
 COPY cosign.pub /cosign.pub
 
-# Base Image
-#FROM ghcr.io/ublue-os/bazzite:stable
 FROM ${BASE_IMAGE}
 
 ARG BASE_IMAGE
@@ -17,36 +15,11 @@ ARG AERINITE_VERSION=local
 LABEL org.opencontainers.image.base.name="$BASE_IMAGE"
 LABEL org.opencontainers.image.base.digest="$BASE_IMAGE_DIGEST"
 
-## Other possible base images include:
-# FROM ghcr.io/ublue-os/bazzite:latest
-# FROM ghcr.io/ublue-os/bluefin-nvidia:stable
-# 
-# ... and so on, here are more base images
-# Universal Blue Images: https://github.com/orgs/ublue-os/packages
-# Fedora base image: quay.io/fedora/fedora-bootc:41
-# CentOS base images: quay.io/centos-bootc/centos-bootc:stream10
-
-### [IM]MUTABLE /opt
-## Some bootable images, like Fedora, have /opt symlinked to /var/opt, in order to
-## make it mutable/writable for users. However, some packages write files to this directory,
-## thus its contents might be wiped out when bootc deploys an image, making it troublesome for
-## some packages. Eg, google-chrome, docker-desktop.
-##
-## Uncomment the following line if one desires to make /opt immutable and be able to be used
-## by the package manager.
-
-# RUN rm /opt && mkdir /opt
-
-### MODIFICATIONS
-## make modifications desired in your image and install packages by modifying the build.sh script
-## the following RUN directive does all the things required to run "build.sh" as recommended.
-
+# Packages, branding, config and services: see build_files/build.sh
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
     /ctx/build.sh
-    
-### LINTING
-## Verify final image and contents are correct.
+
 RUN bootc container lint
