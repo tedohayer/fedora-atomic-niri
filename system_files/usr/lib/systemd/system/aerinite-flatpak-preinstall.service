@@ -1,9 +1,14 @@
 # Nothing in base-main runs flatpak preinstall, so do it at boot once the
-# network is up, retrying until it succeeds.
+# network is up, retrying until it succeeds. DefaultDependencies=no keeps
+# multi-user.target from waiting on the downloads (a target is otherwise
+# ordered after everything it wants); the usual ordering is restated below.
 [Unit]
 Description=Install the Flatpaks Aerinite ships by default
+DefaultDependencies=no
 Wants=network-online.target
-After=network-online.target
+After=basic.target network-online.target
+Conflicts=shutdown.target
+Before=shutdown.target
 
 [Service]
 Type=oneshot
